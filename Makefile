@@ -35,7 +35,7 @@ $(OBJDIR):
 $(OBJDIR)/boot.o: boot/boot.s | $(OBJDIR)
 	$V$(AS) --32 $< -o $@
 
-$(OBJDIR)/kernel.elf: boot/boot.elf.ld $(OBJS)
+$(OBJDIR)/kernel.elf: boot/boot.ld $(OBJS)
 	$V$(LD) -g -o $@ -T $^ $(GCC_LIB)
 
 $(OBJDIR)/kernel.bin: $(OBJDIR)/kernel.elf
