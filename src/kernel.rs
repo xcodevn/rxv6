@@ -1,3 +1,4 @@
+
 enum Color {
     Black      = 0,
     Blue       = 1,
@@ -29,6 +30,6 @@ fn clear_screen_num(background: u16) {
 
 #[no_mangle]
 pub fn main() {
-clear_screen_num(14); // Yellow
+    clear_screen_num(14); // Yellow
 }
 
