@@ -27,8 +27,25 @@ _start:
   jc idle
 
   cli
+  cld
+
+seta20.1:
+  inb     $0x64,%al               # Wait for not busy
+  testb   $0x2,%al
+  jnz     seta20.1
+
+  movb    $0xd1,%al               # 0xd1 -> port 0x64
+  outb    %al,$0x64
+
+seta20.2:
+  inb     $0x64,%al               # Wait for not busy
+  testb   $0x2,%al
+  jnz     seta20.2
+
+  movb    $0xdf,%al               # 0xdf -> port 0x60
+  outb    %al,$0x60
+
   lgdt gdtr
-  lidt idtr
   movl %cr0, %eax
   orl  $01 , %eax
   movl %eax, %cr0
@@ -57,7 +74,6 @@ loop:
 
 .text
 .globl __morestack
-.globl _GLOBAL_OFFSET_TABLE_
 
 __morestack:
   jmp __morestack
@@ -99,3 +115,5 @@ author:
 .section ".bssignature", "a"
 signature:
   .word 0xaa55
+
+

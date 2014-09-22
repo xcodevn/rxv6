@@ -1,20 +1,29 @@
 
 #![feature(asm)]
 
+extern crate libc;
+
+
 pub mod tools;
 pub mod runtime;
 pub mod console;
+pub mod libc;
 
-fn clear_screen(background: u16) {
-    for i in range(0u, 80 * 25) {
-        unsafe {
-            *((0xb8000 + i * 2) as *mut u16) = background << 12;
+
+fn console () {
+    let mut a = 0i;
+    unsafe {
+        libc::cons_init();
+        libc::cprintf(" RXV6 - i386 \n\x00".as_ptr());
+        while (true) {
+            let st = libc::readline(">> \x00".as_ptr());
+            libc::cprintf("[%d]     %s\n\x00".as_ptr(), a, st);
+            a = a + 1;
         }
     }
 }
 
 #[no_mangle]
 pub fn main() {
-    clear_screen(0); // Yellow
-    tools::wait(2,2);
+    console();
 }
