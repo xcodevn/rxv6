@@ -7,5 +7,6 @@ SECTIONS
   .bsdata : { *(.bsdata) }
   . = 0x7e00 - 0x2;
   .bssign : { *(.bssignature) }
+  .text : { *(.text) }
 }
 

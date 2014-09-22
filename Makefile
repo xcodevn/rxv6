@@ -1,26 +1,44 @@
-
-V= 																						# verbose ON/OFF (default: OFF)
+V= 																	# verbose ON/OFF (default: OFF)
 QEMU=qemu-system-i386
 INFO="  [info] "
-RC=rustc																			# Rust compiler
-OUTDIR=out
+RUSTC:=rustc
+OBJDIR=out
 AS=as
 SHELL := /bin/bash
+LD=ld
 
-all: 
-	$Vecho "$(INFO)All we have now is nothing"
+OBJS := $(addprefix $(OBJDIR)/,kernel.o boot.o, kernel.bin, disk.img)
 
-sim: $(OUTDIR)/kernel.bin
+all: $(OBJS)
+
+$(OBJS): |$(OBJDIR)
+
+$(OBJDIR)/kernel.o:
+	$(RUSTC) -O --crate-type lib --emit obj -o $@  src/kernel.rs
+
+run: $(OBJDIR)/disk.img | $(OBJDIR)
 	$Vecho "$(INFO)Running qemu simulation"
-	$V$(QEMU) $(QEMU_FLAGS) $^
+	$V$(QEMU) $(QEMU_FLAGS) -fda $^
 
-mkoutdir:
-	$Vmkdir -p $(OUTDIR)
+$(OBJDIR):
+	$Vmkdir -p $(OBJDIR)
 
-$(OUTDIR)/kernel.bin: mkoutdir boot/boot.ld boot/boot.s
-	$V$(AS) --32 boot/boot.s -o $(OUTDIR)/boot.o
-	$Vld -T boot/boot.ld -o $@ $(OUTDIR)/boot.o
+$(OBJDIR)/boot.o: boot/boot.s | $(OBJDIR)
+	$V$(AS) --32 $< -o $@
+
+$(OBJDIR)/kernel.bin: boot/boot.ld $(OBJDIR)/kernel.o $(OBJDIR)/boot.o
+	$V$(LD) -o $@ -T $^
+
+$(OBJDIR)/disk.img: $(OBJDIR)/kernel.bin 
+	dd if=/dev/zero of=$@ bs=512 count=2 &>/dev/null
+	cat $^ | dd if=/dev/stdin of=$@ conv=notrunc &>/dev/null
+
 
 clean:
-	$Vrm -rf $(OUTDIR)
+	$Vrm -rf $(OBJDIR)
 
+debug: $(OBJDIR)/disk.img | $(OBJDIR)
+	$Vecho "$(INFO)Running qemu in debug mode"
+	$V$(QEMU) -s -S $(QEMU_FLAGS) -fda $^
+
+.PHONY: clean run debug
