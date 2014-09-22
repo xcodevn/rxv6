@@ -6,6 +6,7 @@ OBJDIR=out
 AS=as
 SHELL := /bin/bash
 LD=ld
+QEMU_FLAGS=-serial mon:stdio
 
 OBJS := $(addprefix $(OBJDIR)/,kernel.o boot.o, kernel.bin, disk.img)
 
@@ -16,9 +17,6 @@ $(OBJS): |$(OBJDIR)
 $(OBJDIR)/kernel.o:
 	$(RUSTC) --crate-type lib -o $@ --emit obj src/kernel.rs
 
-run: $(OBJDIR)/disk.img | $(OBJDIR)
-	$Vecho "$(INFO)Running qemu simulation"
-	$V$(QEMU) $(QEMU_FLAGS) -fda $^
 
 $(OBJDIR):
 	$Vmkdir -p $(OBJDIR)
@@ -35,6 +33,10 @@ $(OBJDIR)/disk.img: $(OBJDIR)/kernel.bin
 
 clean:
 	$Vrm -rf $(OBJDIR)
+
+run: $(OBJDIR)/disk.img | $(OBJDIR)
+	$Vecho "$(INFO)Running qemu simulation"
+	$V$(QEMU) $(QEMU_FLAGS) -fda $^
 
 debug: $(OBJDIR)/disk.img | $(OBJDIR)
 	$Vecho "$(INFO)Running qemu in debug mode"
