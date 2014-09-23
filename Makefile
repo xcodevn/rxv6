@@ -4,7 +4,6 @@ RUSTC := rustc
 OBJDIR := out
 AS=as
 SHELL := /bin/bash
-PERL  := perl
 LD := ld
 QEMU_FLAGS := -serial mon:stdio
 CC_FLAGS := -nostdinc -fno-omit-frame-pointer -Wall -Wno-format -Wno-unused -Werror -gstabs -m32 -O1 -fno-builtin
@@ -25,7 +24,7 @@ ifeq ($(V),0)
 override V = @
 endif
 
-all: clean compile run
+all: compile run
 
 $(OBJDIR):
 	$Vecho  mkdir $(OBJDIR)
@@ -36,8 +35,8 @@ compile: $(OBJS) | $(OBJDIR)
 	$Vecho "> compile all objs"
 
 $(OBJDIR)/libkernel.a: src/kernel.rs | $(OBJDIR)
-	$Vecho  rustc $< -o $@
-	$V$(RUSTC) --dep-info $(OBJDIR)/.deps -Z no-landing-pads -g -o $@ src/kernel.rs
+	$Vecho  rc $< -o $@
+	$V$(RUSTC) --dep-info $(OBJDIR)/.deps -g -o $@ src/kernel.rs
 
 $(OBJDIR)/boot0: boot/boot.ld boot/boot.S boot/main.c | $(OBJDIR)
 	$Vecho  as boot.s
