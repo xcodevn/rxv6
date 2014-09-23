@@ -6,9 +6,7 @@ use libc;
 use libc::console::{print, println};
 use libc::console;
 
-
 pub fn run () {
-    console::init();
     console::set_textcolor(9);
     println("RXV6 loaded!\x00");
     console::set_textcolor(7);
@@ -18,7 +16,6 @@ pub fn run () {
         while true {
             let j = box *i;
             let st = libc::origin::readline("# \x00".as_ptr());
-
         }
     }
 }

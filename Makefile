@@ -4,6 +4,7 @@ RUSTC := rustc
 OBJDIR := out
 AS=as
 SHELL := /bin/bash
+PERL  := perl
 LD := ld
 QEMU_FLAGS := -serial mon:stdio
 CC_FLAGS := -nostdinc -fno-omit-frame-pointer -Wall -Wno-format -Wno-unused -Werror -gstabs -m32 -O1 -fno-builtin
@@ -12,7 +13,7 @@ V=0
 
 TOP = .
 
-OBJS := $(addprefix $(OBJDIR)/,entry.o entrypgdir.o init.o readline.o printfmt.o string.o printf.o console.o kernel.a)
+OBJS := $(addprefix $(OBJDIR)/,entry.o entrypgdir.o init.o readline.o printfmt.o string.o printf.o console.o libkernel.a)
 
 GCC_LIB := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
@@ -27,24 +28,24 @@ endif
 all: clean compile run
 
 $(OBJDIR):
-	$Vecho + mkdir $(OBJDIR)
+	$Vecho  mkdir $(OBJDIR)
 	$Vmkdir -p $(OBJDIR)
 
 
 compile: $(OBJS) | $(OBJDIR)
 	$Vecho "> compile all objs"
 
-$(OBJDIR)/kernel.a: src/kernel.rs | $(OBJDIR)
-	$Vecho + rustc $< -o $@
-	$V$(RUSTC) -Z no-landing-pads -g -o $@ src/kernel.rs
+$(OBJDIR)/libkernel.a: src/kernel.rs | $(OBJDIR)
+	$Vecho  rustc $< -o $@
+	$V$(RUSTC) --dep-info $(OBJDIR)/.deps -Z no-landing-pads -g -o $@ src/kernel.rs
 
 $(OBJDIR)/boot0: boot/boot.ld boot/boot.S boot/main.c | $(OBJDIR)
-	$Vecho + as boot.s
+	$Vecho  as boot.s
 	$V$(CC) -E boot/boot.S  -I$(TOP)/libc > $(OBJDIR)/boot.s
 	$V$(AS) --32 $(OBJDIR)/boot.s -o $(OBJDIR)/bootA.o
-	$Vecho + cc boot/main.c
+	$Vecho  cc boot/main.c
 	$V$(CC) -c -o $(OBJDIR)/bootB.o boot/main.c $(CC_FLAGS) -I$(TOP)/libc
-	$Vecho + ld bootA.o bootB.o -o boot0
+	$Vecho  ld bootA.o bootB.o -o boot0
 	$V$(LD) -g -o $@ -T boot/boot.ld $(OBJDIR)/bootA.o $(OBJDIR)/bootB.o
 
 $(OBJDIR)/%.o: src/%.S | $(OBJDIR)
@@ -56,25 +57,25 @@ $(OBJDIR)/%.o: src/%.c | $(OBJDIR)
 	$V$(CC) -c -o $@ $^ -I$(TOP)/libc $(CC_FLAGS)
 
 $(OBJDIR)/kernel.elf: src/kernel.ld $(OBJS)
-	$Vecho + ld kernel.elf
+	$Vecho  ld kernel.elf
 	$V$(LD) -g -o $@ -T $^ $(GCC_LIB) -lm -L/usr/lib/i386-linux-gnu/
 
 $(OBJDIR)/kernel.bin: $(OBJDIR)/kernel.elf
-	$Vecho "+ objcopy kernel.elf to binary format (kernel.bin)"
+	$Vecho "objcopy kernel.elf to binary format (kernel.bin)"
 	$Vobjcopy -O binary $(OBJDIR)/kernel.elf $(OBJDIR)/kernel.bin
 
 $(OBJDIR)/disk.img: $(OBJDIR)/boot0 $(OBJDIR)/kernel.elf
-	$Vecho + create disk.img with size 4 x 1M
+	$Vecho  create disk.img with size 4 x 1M
 	$Vdd if=/dev/zero of=$@ bs=1M count=4 &>/dev/null
-	$Vecho + overrided by $^
+	$Vecho  overrided by $^
 	$Vcat $^ | dd if=/dev/stdin of=$@ conv=notrunc &>/dev/null
 
 $(OBJDIR)/%.o: libc/%.c | $(OBJDIR)
-	$Vecho + cc $< -o $@
+	$Vecho  cc $< -o $@
 	$V$(CC) $(CC_FLAGS) -I$(TOP)/libc -c -o $@ $<
 
 clean:
-	$Vecho + rm all objs
+	$Vecho  rm all objs
 	$Vrm -rf $(OBJDIR)
 
 run: $(OBJDIR)/disk.img $(OBJS) 
@@ -84,6 +85,8 @@ run: $(OBJDIR)/disk.img $(OBJS)
 debug: $(OBJDIR)/disk.img $(OBJS)
 	$Vecho "> Running qemu in debug mode"
 	$V$(QEMU) -s -S $(QEMU_FLAGS) -hda $<
+
+-include $(OBJDIR)/.deps
 
 .PHONY: all clean run debug
 

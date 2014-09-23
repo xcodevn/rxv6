@@ -20,5 +20,6 @@ pub mod libc;
 
 #[no_mangle]
 pub fn main() {
+    libc::console::init();
     console::run();
 }
