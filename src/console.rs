@@ -10,7 +10,7 @@ use libc::console;
 use macros;
 
 pub fn helloworld() {
-    for i in range(0, 10i) {
+    for i in range(1, 16i) {
         console::set_textcolor(i);
         println("Hello world")
     }
@@ -30,6 +30,9 @@ pub fn run () {
     cprintf!("RXV6 loaded!\n");
     console::set_textcolor(7);
     cprintf!("Type 'help' for command list.\n");
+    let mut a = [0u8, ..50];
+    sprintf!(a, "412 %d %x\n", 123i, 454i);
+    cprintf!("%s", a.as_ptr());
 
     loop {
         let st = console::readline("# ");

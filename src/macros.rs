@@ -11,3 +11,14 @@ macro_rules! cprintf(
     );
 )
 
+#[macro_export]
+macro_rules! cstr(
+    ($ss:expr) =>({ let mut buf = [0u8, ..512]; libc::console::to_cstring(buf, $ss); buf })
+)
+
+#[macro_export]
+macro_rules! sprintf(
+    ($buf:expr, $fmt:expr $(,$var:expr)*) => (
+        unsafe{ libc::origin::snprintf($buf.as_mut_ptr(), $buf.len() as int, cstr!($fmt).as_ptr() $(,$var)*); }
+    )
+)
