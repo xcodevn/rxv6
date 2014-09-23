@@ -136,11 +136,11 @@ cga_init(void)
 	uint16_t was;
 	unsigned pos;
 
-	cp = (uint16_t*) (/*KERNBASE + */CGA_BUF);
+	cp = (uint16_t*) (KERNBASE + CGA_BUF);
 	was = *cp;
 	*cp = (uint16_t) 0xA55A;
 	if (*cp != 0xA55A) {
-		cp = (uint16_t*) (/*KERNBASE + */MONO_BUF);
+		cp = (uint16_t*) (KERNBASE + MONO_BUF);
 		addr_6845 = MONO_BASE;
 	} else {
 		*cp = was;
@@ -158,13 +158,20 @@ cga_init(void)
 }
 
 
+static int bgcolor=0;
+static int textcolor=7;
+
+void 
+set_bgcolor(int color) { bgcolor = color ; } 
+void 
+set_textcolor(int color) { textcolor = color ; } 
 
 static void
 cga_putc(int c)
 {
-	// if no attribute given, then use black on white
+	// if no attribute given, then use current settings
 	if (!(c & ~0xFF))
-		c |= 0x0700;
+		c |= (textcolor << 8) | (bgcolor << 12);
 
 	switch (c & 0xff) {
 	case '\b':

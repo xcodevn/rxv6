@@ -6,12 +6,13 @@ AS=as
 SHELL := /bin/bash
 LD := ld
 QEMU_FLAGS := -serial mon:stdio
+CC_FLAGS := -nostdinc -fno-omit-frame-pointer -Wall -Wno-format -Wno-unused -Werror -gstabs -m32 -O1 -fno-builtin
 CC := gcc
 V=0
 
 TOP = .
 
-OBJS := $(addprefix $(OBJDIR)/,kernel.o boot.o readline.o printfmt.o string.o printf.o console.o)
+OBJS := $(addprefix $(OBJDIR)/,entry.o entrypgdir.o init.o readline.o printfmt.o string.o printf.o console.o kernel.a)
 
 GCC_LIB := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
@@ -23,54 +24,66 @@ ifeq ($(V),0)
 override V = @
 endif
 
-all: compile run
-	$Vecho "> compile and run"
-
-compile: $(OBJS)
-	$Vecho "> compile all objs"
-
-
-$(OBJDIR)/kernel.o: src/kernel.rs | $(OBJDIR)
-	$Vecho + rustc $< -o $@
-	$V$(RUSTC) -Z no-landing-pads -g --crate-type lib -o $@ --emit obj src/kernel.rs
+all: clean compile run
 
 $(OBJDIR):
 	$Vecho + mkdir $(OBJDIR)
 	$Vmkdir -p $(OBJDIR)
 
-$(OBJDIR)/boot.o: boot/boot.s | $(OBJDIR)
-	$Vecho + as boot.s
-	$V$(AS) --32 $< -o $@
 
-$(OBJDIR)/kernel.elf: boot/boot.ld $(OBJS)
+compile: $(OBJS) | $(OBJDIR)
+	$Vecho "> compile all objs"
+
+$(OBJDIR)/kernel.a: src/kernel.rs | $(OBJDIR)
+	$Vecho + rustc $< -o $@
+	$V$(RUSTC) -Z no-landing-pads -g -o $@ src/kernel.rs
+
+$(OBJDIR)/boot0: boot/boot.ld boot/boot.S boot/main.c | $(OBJDIR)
+	$Vecho + as boot.s
+	$V$(CC) -E boot/boot.S  -I$(TOP)/libc > $(OBJDIR)/boot.s
+	$V$(AS) --32 $(OBJDIR)/boot.s -o $(OBJDIR)/bootA.o
+	$Vecho + cc boot/main.c
+	$V$(CC) -c -o $(OBJDIR)/bootB.o boot/main.c $(CC_FLAGS) -I$(TOP)/libc
+	$Vecho + ld bootA.o bootB.o -o boot0
+	$V$(LD) -g -o $@ -T boot/boot.ld $(OBJDIR)/bootA.o $(OBJDIR)/bootB.o
+
+$(OBJDIR)/%.o: src/%.S | $(OBJDIR)
+	$Vecho cc $^
+	$V$(CC) -c -o $@ $^ -I$(TOP)/libc $(CC_FLAGS)
+
+$(OBJDIR)/%.o: src/%.c | $(OBJDIR)
+	$Vecho cc $^
+	$V$(CC) -c -o $@ $^ -I$(TOP)/libc $(CC_FLAGS)
+
+$(OBJDIR)/kernel.elf: src/kernel.ld $(OBJS)
 	$Vecho + ld kernel.elf
-	$V$(LD) -g -o $@ -T $^ $(GCC_LIB)
+	$V$(LD) -g -o $@ -T $^ $(GCC_LIB) -lm -L/usr/lib/i386-linux-gnu/
 
 $(OBJDIR)/kernel.bin: $(OBJDIR)/kernel.elf
 	$Vecho "+ objcopy kernel.elf to binary format (kernel.bin)"
 	$Vobjcopy -O binary $(OBJDIR)/kernel.elf $(OBJDIR)/kernel.bin
 
-$(OBJDIR)/disk.img: $(OBJDIR)/kernel.bin 
-	$Vecho + create disk.img with size 24 x 512 bytes
-	$Vdd if=/dev/zero of=$@ bs=512 count=24 &>/dev/null
-	$Vecho + overrided by kernel.bin
+$(OBJDIR)/disk.img: $(OBJDIR)/boot0 $(OBJDIR)/kernel.elf
+	$Vecho + create disk.img with size 4 x 1M
+	$Vdd if=/dev/zero of=$@ bs=1M count=4 &>/dev/null
+	$Vecho + overrided by $^
 	$Vcat $^ | dd if=/dev/stdin of=$@ conv=notrunc &>/dev/null
 
-$(OBJDIR)/%.o: libc/%.c
+$(OBJDIR)/%.o: libc/%.c | $(OBJDIR)
 	$Vecho + cc $< -o $@
-	$V$(CC) -ggdb -fno-omit-frame-pointer -Wall -Wno-format -Wno-unused -Werror -gstabs -m32 -O1 -fno-builtin -I$(TOP)/libc -c -o $@ $<
+	$V$(CC) $(CC_FLAGS) -I$(TOP)/libc -c -o $@ $<
 
 clean:
 	$Vecho + rm all objs
 	$Vrm -rf $(OBJDIR)
 
-run: $(OBJDIR)/disk.img $(OBJS)| $(OBJDIR)
+run: $(OBJDIR)/disk.img $(OBJS) 
 	$Vecho "> Running qemu simulation"
-	$V$(QEMU) $(QEMU_FLAGS) -fda $<
+	$V$(QEMU) $(QEMU_FLAGS) -hda $<
 
-debug: $(OBJDIR)/disk.img | $(OBJDIR)
+debug: $(OBJDIR)/disk.img $(OBJS)
 	$Vecho "> Running qemu in debug mode"
-	$V$(QEMU) -s -S $(QEMU_FLAGS) -fda $<
+	$V$(QEMU) -s -S $(QEMU_FLAGS) -hda $<
 
 .PHONY: all clean run debug
 
