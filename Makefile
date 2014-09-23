@@ -56,9 +56,9 @@ $(OBJDIR)/disk.img: $(OBJDIR)/kernel.bin
 	$Vecho + overrided by kernel.bin
 	$Vcat $^ | dd if=/dev/stdin of=$@ conv=notrunc &>/dev/null
 
-$(OBJDIR)/%.o: lib/%.c
+$(OBJDIR)/%.o: libc/%.c
 	$Vecho + cc $< -o $@
-	$V$(CC) -ggdb -fno-omit-frame-pointer -Wall -Wno-format -Wno-unused -Werror -gstabs -m32 -O1 -fno-builtin -I$(TOP) -c -o $@ $<
+	$V$(CC) -ggdb -fno-omit-frame-pointer -Wall -Wno-format -Wno-unused -Werror -gstabs -m32 -O1 -fno-builtin -I$(TOP)/libc -c -o $@ $<
 
 clean:
 	$Vecho + rm all objs

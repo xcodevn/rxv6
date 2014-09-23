@@ -1,3 +1,5 @@
+// wrapper of C functions
+//
 extern "C" {
     pub fn snprintf(buf: *mut u8, n: int, fmt: *const u8, ...);
     pub fn cprintf(fmt: *const u8, ...);
