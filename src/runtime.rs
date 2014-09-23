@@ -19,12 +19,13 @@ fn begin_unwind(args: &self::core::fmt::Arguments,
 #[lang = "stack_exhausted"] extern fn stack_exhausted() {}
 #[lang = "eh_personality"] extern fn eh_personality() {}
 
-static mut topheap:uint = 0;
 
 // Linearly increase the address
 //
 #[lang="exchange_malloc"]
 unsafe fn allocate(size: uint, _align: uint) -> *mut u8 {
+
+    static mut topheap:uint = 0;
 
     if topheap == 0 { topheap = libc::origin::heapbase(); }
 

@@ -16,15 +16,35 @@ pub mod origin {
     }
 }
 
+
 pub mod console {
     use core::prelude::*;
+    use macros;
 
-    pub fn print(msg: & str) {
-        unsafe { super::origin::cprintf(msg.as_ptr()); }
+    pub fn to_cstring(buf: &mut [u8], s:& str) {
+        if s.len() >= buf.len() { return ; }
+        for i in range(0, s.len()) {
+            buf[i] = s.as_bytes()[i];
+        }
+        buf[s.len()] = 0;
     }
 
-    pub fn println(msg: & str) {
-        unsafe { super::origin::cprintf(msg.as_ptr()); }
+    pub fn readline(promt: &str) -> *const u8 {
+        let mut buf = [0u8, ..512];
+        to_cstring(buf, promt);
+        unsafe { super::origin::readline(buf.as_ptr()) }
+    }
+
+    pub fn print(msg: &str) {
+        let mut buf = [0u8, ..512];
+        to_cstring(buf, msg);
+        unsafe { super::origin::cprintf(buf.as_ptr()); }
+    }
+
+    pub fn println(msg: &str) {
+        let mut buf = [0u8, ..512];
+        to_cstring(buf, msg);
+        unsafe { super::origin::cprintf(buf.as_ptr()); }
         print("\n\x00");
     }
 
@@ -41,5 +61,3 @@ pub mod console {
     }
 }
 
-pub mod string {
-}

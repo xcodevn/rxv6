@@ -1,7 +1,7 @@
 QEMU=qemu-system-i386
 INFO=" [info] "
 RUSTC := rustc
-OBJDIR := out
+OBJDIR := obj
 AS=as
 SHELL := /bin/bash
 LD := ld
