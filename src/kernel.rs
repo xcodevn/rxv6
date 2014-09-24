@@ -10,12 +10,11 @@ use core::prelude::*;
 pub mod macros;
 pub mod tools;
 pub mod runtime;
-pub mod console;
+pub mod monitor;
 pub mod libc;
 
 #[no_mangle]
 pub fn main() {
     libc::console::init();
-    console::run();
+    monitor::run();
 }
-

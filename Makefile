@@ -1,6 +1,6 @@
 QEMU=qemu-system-i386
 INFO=" [info] "
-RUSTC := rustc
+RUSTC := LD_LIBRARY_PATH=/usr/local/lib rustc
 OBJDIR := obj
 AS=as -32
 SHELL := /bin/bash
@@ -79,11 +79,13 @@ clean:
 
 run: $(OBJDIR)/disk.img $(OBJS) 
 	$Vecho "> Running qemu simulation"
-	$V$(QEMU) $(QEMU_FLAGS) -hda $<
+	$V$(QEMU) $(QEMU_FLAGS) -hda $< 2>/dev/null
 
 debug: $(OBJDIR)/disk.img $(OBJS)
 	$Vecho "> Running qemu in debug mode"
-	$V$(QEMU) -s -S $(QEMU_FLAGS) -hda $<
+	$V$(QEMU) -s -S $(QEMU_FLAGS) -hda $< 2>/dev/null
+
+
 
 -include $(OBJDIR)/.deps
 

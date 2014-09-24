@@ -19,7 +19,7 @@ SECTIONS
 	PROVIDE(etext = .);	/* Define the 'etext' symbol to this value */
 
 	.rodata : {
-		*(.rodata .rodata.* .gnu.linkonce.r.*)
+		*(.rodata .rodata.* .gnu.linkonce.r.* .data.rel.*)
 	}
 
 	/* Include debugging information in kernel memory */
@@ -48,7 +48,7 @@ SECTIONS
 	}
 
 	PROVIDE(edata = .);
-  
+
 	/* The data segment */
 	.heapdata : {
 		*(.heapdata)

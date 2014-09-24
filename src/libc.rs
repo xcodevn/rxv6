@@ -19,6 +19,7 @@ pub mod origin {
 
 pub mod console {
     use core::prelude::*;
+    use core::mem;
     use macros;
 
     pub fn to_cstring(buf: &mut [u8], s:& str) {
@@ -29,10 +30,18 @@ pub mod console {
         buf[s.len()] = 0;
     }
 
-    pub fn readline(promt: &str) -> *const u8 {
+    pub fn to_str(ptr: *const u8)-> &'static str {
+        let v: &[u8] = unsafe { mem::transmute( (ptr, 256u) ) };
+        let mut c = 0u;
+        while v[c] != 0 { c = c + 1; }
+        unsafe { mem::transmute( (ptr, c) ) }
+    }
+
+    pub fn readline(promt: &str) -> &str {
         let mut buf = [0u8, ..512];
         to_cstring(buf, promt);
-        unsafe { super::origin::readline(buf.as_ptr()) }
+        let ptr = unsafe { super::origin::readline(buf.as_ptr()) };
+        to_str(ptr)
     }
 
     pub fn print(msg: &str) {
