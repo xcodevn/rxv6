@@ -2,12 +2,12 @@ QEMU=qemu-system-i386
 INFO=" [info] "
 RUSTC := rustc
 OBJDIR := obj
-AS=as
+AS=as -32
 SHELL := /bin/bash
-LD := ld
+LD := ld -m elf_i386
 QEMU_FLAGS := -serial mon:stdio
 CC_FLAGS := -nostdinc -fno-omit-frame-pointer -Wall -Wno-format -Wno-unused -Werror -gstabs -m32 -O1 -fno-builtin
-CC := gcc
+CC := gcc -pipe
 V=0
 
 TOP = .
@@ -57,7 +57,7 @@ $(OBJDIR)/%.o: src/%.c | $(OBJDIR)
 
 $(OBJDIR)/kernel.elf: src/kernel.ld $(OBJS)
 	$Vecho  ld kernel.elf
-	$V$(LD) -g -o $@ -T $^ $(GCC_LIB) -lm -L/usr/lib/i386-linux-gnu/
+	$V$(LD) -g -o $@ -T $^ $(GCC_LIB) /lib/libm.a --unresolved-symbols=ignore-all -Bstatic
 
 $(OBJDIR)/kernel.bin: $(OBJDIR)/kernel.elf
 	$Vecho "objcopy kernel.elf to binary format (kernel.bin)"

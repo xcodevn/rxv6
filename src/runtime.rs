@@ -4,8 +4,6 @@ extern crate core;
 use self::core::prelude::*;
 use self::core::mem;
 use self::core::mem::transmute;
-use self::core::iter::Iterator;
-use self::core::option::{Some, Option, None};
 use libc::console::println;
 use libc;
 

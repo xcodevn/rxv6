@@ -1,6 +1,5 @@
 extern crate core;
 use core::prelude::*;
-use core;
 use core::fmt::*;
 
 use libc;
