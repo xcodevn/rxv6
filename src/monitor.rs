@@ -33,7 +33,14 @@ fn mon_help() {
 }
 
 fn mon_backtrack () {
-    cprintf!("ebp : %p", asm::read_ebp());
+    cprintf!("ebp : %p\n", asm::read_ebp());
+    let mut ebp: u32 = asm::read_ebp();
+    loop {
+        let eip = unsafe {*((ebp + 4) as *const u32)};
+        let info = kdebug::debuginfo_eip(eip);
+        ebp = unsafe { *(ebp as *const u32) };
+        if eip == 0 { break; }
+    }
 }
 
 fn mon_kerninfo () {

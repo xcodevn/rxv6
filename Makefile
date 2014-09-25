@@ -62,7 +62,7 @@ $(OBJDIR)/%.o: src/%.c | $(OBJDIR)
 
 $(OBJDIR)/kernel.elf: src/kernel.ld $(OBJS)
 	$Vecho  ld kernel.elf
-	$V$(CC) -g -o $@ -T $^ -lm -nostdlib			# use CC as our linker (easier with math lib)
+	$V$(LD) -g -o $@ -T $^ -nostdlib --unresolved-symbols=ignore-all			# use CC as our linker (easier with math lib)
 
 $(OBJDIR)/kernel.bin: $(OBJDIR)/kernel.elf
 	$Vecho "objcopy kernel.elf to binary format (kernel.bin)"

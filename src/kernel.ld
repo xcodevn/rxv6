@@ -47,20 +47,20 @@ SECTIONS
 		*(.data)
 	}
 
-	PROVIDE(edata = .);
 
 	/* The data segment */
 	.heapdata : {
 		*(.heapdata)
 	}
-
 	.bss : {
+        PROVIDE(edata = .);
 		*(.bss)
+        PROVIDE(end = .);
 	}
 
-	PROVIDE(end = .);
 
 	/DISCARD/ : {
 		*(.eh_frame .note.GNU-stack)
 	}
+    
 }

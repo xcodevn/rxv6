@@ -12,9 +12,8 @@ void i386_init() {
 	// This ensures that all static/global variables start out zero.
 	memset(edata, 0, end - edata);
 
-  // call `main` function written in Rust
-  main();
-
+    // call `main` function written in Rust
+    main();
 }
 
 void _Unwind_Resume () {
