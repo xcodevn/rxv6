@@ -27,7 +27,7 @@ unsafe fn allocate(size: uint, _align: uint) -> *mut u8 {
 
     static mut topheap:uint = 0;
 
-    if topheap == 0 { topheap = libc::origin::heapbase(); }
+    if topheap == 0 { topheap = libc::origin::bootheap as uint; }
 
     libc::origin::cprintf("\ntopheap: %x\n\x00".as_ptr(), topheap);
     let remain = topheap % _align;

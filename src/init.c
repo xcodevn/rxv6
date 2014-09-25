@@ -3,11 +3,6 @@
 
 extern void main();
 
-unsigned int heapbase() {
-  extern char bootheap[];
-  return (unsigned int)bootheap;
-}
-
 void i386_init() {
 
 	extern char edata[], end[];

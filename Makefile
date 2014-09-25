@@ -6,13 +6,13 @@ AS=as -32
 SHELL := /bin/bash
 LD := ld -m elf_i386
 QEMU_FLAGS := -serial mon:stdio
-CC_FLAGS := -nostdinc -fno-omit-frame-pointer -Wall -Wno-format -Wno-unused -Werror -gstabs -m32 -O1 -fno-builtin
-CC := gcc -pipe
+CC_FLAGS := -nostdinc -fno-omit-frame-pointer -Wall -Wno-format -Wno-unused -Werror -gstabs -O1 -fno-builtin
+CC := gcc -pipe -m32
 V=0
 
 TOP = .
 
-OBJS := $(addprefix $(OBJDIR)/,entry.o entrypgdir.o init.o readline.o printfmt.o string.o printf.o console.o libkernel.a)
+OBJS := $(addprefix $(OBJDIR)/,entry.o entrypgdir.o init.o readline.o printfmt.o string.o printf.o console.o libm.o libkernel.a)
 
 GCC_LIB := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
@@ -33,6 +33,11 @@ $(OBJDIR):
 
 compile: $(OBJS) | $(OBJDIR)
 	$Vecho "> compile all objs"
+
+$(OBJDIR)/%.o: lib/%.rs
+	$Vecho  rc $< -o $@
+	$V$(RUSTC) -g -o $@ --emit=obj $^
+
 
 $(OBJDIR)/libkernel.a: src/kernel.rs | $(OBJDIR)
 	$Vecho  rc $< -o $@
@@ -57,7 +62,7 @@ $(OBJDIR)/%.o: src/%.c | $(OBJDIR)
 
 $(OBJDIR)/kernel.elf: src/kernel.ld $(OBJS)
 	$Vecho  ld kernel.elf
-	$V$(LD) -g -o $@ -T $^ $(GCC_LIB) /lib/libm.a --unresolved-symbols=ignore-all -Bstatic
+	$V$(CC) -g -o $@ -T $^ -lm -nostdlib			# use CC as our linker (easier with math lib)
 
 $(OBJDIR)/kernel.bin: $(OBJDIR)/kernel.elf
 	$Vecho "objcopy kernel.elf to binary format (kernel.bin)"

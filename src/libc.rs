@@ -5,14 +5,24 @@ extern crate core;
 
 pub mod origin {
     extern "C" {
-        pub fn heapbase() -> uint;
+        /* symbols addr */
+        pub fn _start();
+        pub fn entry();
+        pub fn etext();
+        pub fn edata();
+        pub fn end();
+        pub fn bootheap();
+        pub fn __STAB_BEGIN__();
+        pub fn __STAB_END__();
+        pub fn __STABSTR_BEGIN__();
+        pub fn __STABSTR_END__();
+
         pub fn snprintf(buf: *mut u8, n: int, fmt: *const u8, ...);
         pub fn cprintf(fmt: *const u8, ...);
         pub fn cons_init();
         pub fn readline(promt: *const u8) -> *const u8;
         pub fn set_bgcolor(color: int);
         pub fn set_textcolor(color: int);
-
     }
 }
 

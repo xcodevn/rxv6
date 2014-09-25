@@ -9,6 +9,9 @@ use core::prelude::*;
 
 pub mod macros;
 pub mod tools;
+pub mod asm;
+pub mod kdebug;
+pub mod mem;
 pub mod runtime;
 pub mod monitor;
 pub mod libc;
