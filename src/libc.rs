@@ -11,6 +11,8 @@ pub mod origin {
         pub fn etext();
         pub fn edata();
         pub fn end();
+        pub fn malloc(size: u32) -> *mut u8;
+        pub fn free(ptr: *const u8);
         pub fn bootheap();
         pub fn __STAB_BEGIN__();
         pub fn __STAB_END__();

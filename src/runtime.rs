@@ -1,3 +1,5 @@
+#![allow(unused_unsafe)] 
+#![allow(dead_code)]
 
 extern crate core;
 
@@ -23,15 +25,21 @@ fn begin_unwind(args: &self::core::fmt::Arguments,
 // Linearly increase the address
 //
 #[lang="exchange_malloc"]
-unsafe fn allocate(size: uint, _align: uint) -> *mut u8 {
+pub unsafe fn allocation(size: uint, _align: uint) -> *mut u8 {
+     unsafe {libc::origin::malloc(size as u32)}
+}
+
+#[no_mangle]
+pub unsafe fn system_alloc(size: uint) -> *mut u8 {
 
     static mut topheap:uint = 0;
 
     if topheap == 0 { topheap = libc::origin::bootheap as uint; }
 
-    libc::origin::cprintf("\ntopheap: %x\n\x00".as_ptr(), topheap);
-    let remain = topheap % _align;
-    let bg = if remain == 0 { topheap } else { topheap - remain + size} ;
+    // libc::origin::cprintf("\ntopheap: %x\n\x00".as_ptr(), topheap);
+    //let remain = topheap % _align;
+    //let bg = if remain == 0 { topheap } else { topheap - remain + size} ;
+    let bg = topheap;
 
     // increase top
     topheap = bg + size;
@@ -42,5 +50,7 @@ unsafe fn allocate(size: uint, _align: uint) -> *mut u8 {
 #[lang="exchange_free"]
 unsafe fn deallocate(ptr: *mut u8, _size: uint, _align: uint) {
     // FIXME: do nothing!
-     libc::origin::cprintf("\ndealloc at: 0x%x\n\x00".as_ptr(), ptr);
+     //libc::origin::cprintf("\ndealloc at: 0x%x\n\x00".as_ptr(), ptr);
+     unsafe {libc::origin::free(ptr as *const u8);}
 }
+

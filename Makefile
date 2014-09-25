@@ -12,7 +12,7 @@ V=0
 
 TOP = .
 
-OBJS := $(addprefix $(OBJDIR)/,entry.o entrypgdir.o init.o readline.o printfmt.o string.o printf.o console.o libm.o libkernel.a)
+OBJS := $(addprefix $(OBJDIR)/,entry.o qsort.o bsearch.o alloc.o malloc.o state.o dwarf.o entrypgdir.o init.o readline.o printfmt.o string.o printf.o console.o libm.o libkernel.a)
 
 GCC_LIB := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
@@ -75,6 +75,10 @@ $(OBJDIR)/disk.img: $(OBJDIR)/boot0 $(OBJDIR)/kernel.elf
 	$Vcat $^ | dd if=/dev/stdin of=$@ conv=notrunc &>/dev/null
 
 $(OBJDIR)/%.o: libc/%.c | $(OBJDIR)
+	$Vecho  cc $< -o $@
+	$V$(CC) $(CC_FLAGS) -I$(TOP)/libc -c -o $@ $<
+
+$(OBJDIR)/%.o: libc/backtrace/%.c | $(OBJDIR)
 	$Vecho  cc $< -o $@
 	$V$(CC) $(CC_FLAGS) -I$(TOP)/libc -c -o $@ $<
 

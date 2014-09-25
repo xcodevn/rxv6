@@ -18,6 +18,7 @@ pub mod libc;
 
 #[no_mangle]
 pub fn main() {
+    let a = box 3i;
     libc::console::init();
     monitor::run();
 }

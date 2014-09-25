@@ -1,7 +1,9 @@
 
+#include <inc/stdio.h>
 #include <inc/string.h>
 
 extern void main();
+extern void* malloc(int s);
 
 void i386_init() {
 
@@ -12,8 +14,10 @@ void i386_init() {
 	// This ensures that all static/global variables start out zero.
 	memset(edata, 0, end - edata);
 
-    // call `main` function written in Rust
-    main();
+  void* ptr = malloc(10);
+
+  // call `main` function written in Rust
+   main();
 }
 
 void _Unwind_Resume () {
