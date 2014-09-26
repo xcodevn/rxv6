@@ -64,13 +64,15 @@ backtrace_get_view (struct backtrace_state *state, int descriptor,
     }
     */
 
-  view->base = backtrace_alloc (state, size, error_callback, data);
+  int remain = offset % 512;
+
+  view->base = backtrace_alloc (state, size + remain, error_callback, data);
   if (view->base == NULL)
     return 0;
-  view->data = view->base;
+  view->data = view->base + remain;
   view->len = size;
 
-  readseg((uint32_t)view->base, view->len, offset);
+  readseg((uint32_t)view->base, size + remain, offset & ~511);
   /*
   got = read (descriptor, view->base, size); 
   if (got < 0)
@@ -177,9 +179,7 @@ waitdisk(void)
 void
 readsect(void *dst, uint32_t offset, uint32_t left)
 {
-    char buf[2*SECTSIZE];
-    char* b = (char*)(  ((uint32_t) buf + SECTSIZE) & ~(SECTSIZE - 1) );
-
+  char* buf[512];
 	// wait for disk to be ready
 	waitdisk();
 
@@ -194,7 +194,7 @@ readsect(void *dst, uint32_t offset, uint32_t left)
 	waitdisk();
 
 	// read a sector
-	insl(0x1F0, b, SECTSIZE/4);
-
-    if (left > SECTSIZE) memcpy(dst, b,  SECTSIZE); else memcpy(dst, b, left);
+	insl(0x1F0, buf, SECTSIZE/4);
+  if (left <= 512) memcpy(dst, buf, left);
+  else memcpy(dst, buf, 512);
 }

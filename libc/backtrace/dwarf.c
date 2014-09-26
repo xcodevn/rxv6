@@ -663,7 +663,7 @@ read_attribute (enum dwarf_form form, struct dwarf_buf *buf,
       {
 	uint64_t offset;
 
-	offset = 0; //read_offset (buf, is_dwarf64);
+	offset = read_offset (buf, is_dwarf64);
 	if (offset >= dwarf_str_size)
 	  {
 	    dwarf_buf_error (buf, "DW_FORM_strp out of range");
@@ -1409,7 +1409,7 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
 	  goto fail;
 	}
 
-      abbrev_offset = 0; //read_offset (&unit_buf, is_dwarf64);
+      abbrev_offset = read_offset (&unit_buf, is_dwarf64);
       if (!read_abbrevs (state, abbrev_offset, dwarf_abbrev, dwarf_abbrev_size,
 			 is_bigendian, error_callback, data, &abbrevs))
 	goto fail;

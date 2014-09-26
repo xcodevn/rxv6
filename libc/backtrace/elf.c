@@ -39,7 +39,7 @@ POSSIBILITY OF SUCH DAMAGE.  */
 
 int backtrace_close (int descriptor,
 			    backtrace_error_callback error_callback,
-			    void *data) { return 0; }  /* do nothing */
+			    void *data) { return 1; }  /* do nothing */
 
 
 /* Dummy version of dl_iterate_phdr for systems that don't have it.  */
@@ -632,6 +632,48 @@ elf_add (struct backtrace_state *state, int descriptor, uintptr_t base_address,
 
   memset (sections, 0, sizeof sections);
 
+  /* Look for the symbol table.  */
+  for (i = 1; i < shnum; ++i)
+    {
+      const b_elf_shdr *shdr;
+      unsigned int sh_name;
+      const char *name;
+      int j;
+
+      shdr = &shdrs[i - 1];
+
+      if (shdr->sh_type == SHT_SYMTAB)
+	symtab_shndx = i;
+      else if (shdr->sh_type == SHT_DYNSYM)
+	dynsym_shndx = i;
+
+      sh_name = shdr->sh_name;
+      if (sh_name >= shstr_size)
+	{
+	  error_callback (data, "ELF section name out of range", 0);
+	  goto fail;
+	}
+
+      name = names + sh_name;
+
+      for (j = 0; j < (int) DEBUG_MAX; ++j)
+	{
+	  if (strcmp (name, debug_section_names[j]) == 0)
+	    {
+	      sections[j].offset = shdr->sh_offset;
+	      sections[j].size = shdr->sh_size;
+	      break;
+	    }
+	}
+    }
+
+  /* FIXME: Need to handle compressed debug sections.  */
+
+  backtrace_release_view (state, &shdrs_view, error_callback, data);
+  shdrs_view_valid = 0;
+  backtrace_release_view (state, &names_view, error_callback, data);
+  names_view_valid = 0;
+
   /* Read all the debug sections in a single view, since they are
      probably adjacent in the file.  We never release this view.  */
 
@@ -711,6 +753,7 @@ elf_add (struct backtrace_state *state, int descriptor, uintptr_t base_address,
     backtrace_close (descriptor, error_callback, data);
   return 0;
 }
+
 
 /* Data passed to phdr_callback.  */
 

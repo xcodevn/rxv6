@@ -110,6 +110,8 @@ void free(void *ap) {			/* Rueckgabe an Free-Liste	*/
 }
 
 void *realloc(void *ptr, size_t size) {
+  if (ptr == 0) return malloc(size);
+  if (size == 0) { free(ptr); return 0; } 
   char * newptr = malloc(size);
   int i;
   for (i =0; i< size; i++) newptr[i] = ((char*)ptr)[i];
