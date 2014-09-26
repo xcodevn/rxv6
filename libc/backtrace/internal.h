@@ -86,10 +86,13 @@ extern void backtrace_atomic_store_pointer (void *, void *);
 extern void backtrace_atomic_store_size_t (size_t *, size_t);
 extern void backtrace_atomic_store_int (int *, int);
 
+
 #else /* !defined (HAVE_SYNC_FUNCTIONS) */
 
 /* We have neither the sync nor the atomic functions.  These will
    never be called.  */
+
+extern void abort(void);
 
 #define backtrace_atomic_load_pointer(p) (abort(), 0)
 #define backtrace_atomic_load_int(p) (abort(), 0)
@@ -113,6 +116,13 @@ typedef int (*fileline) (struct backtrace_state *state, uintptr_t pc,
 typedef void (*syminfo) (struct backtrace_state *state, uintptr_t pc,
 			 backtrace_syminfo_callback callback,
 			 backtrace_error_callback error_callback, void *data);
+
+extern void qsort(void *base, size_t nmemb, size_t size,
+                      int (*compar)(const void *, const void *));
+
+extern void *bsearch(const void *key, const void *base,
+                     size_t nmemb, size_t size,
+                                          int (*compar)(const void *, const void *));
 
 /* What the backtrace state pointer points to.  */
 

@@ -6,12 +6,6 @@
 #include "internal.h"
 #include "dwarf2.h"
 
-extern        void qsort(void *base, size_t nmemb, size_t size,
-                      int (*compar)(const void *, const void *));
-
-extern        void *bsearch(const void *key, const void *base,
-                     size_t nmemb, size_t size,
-                                          int (*compar)(const void *, const void *));
 
 void abort(void) {
   while (1) /* do nothing */ ;

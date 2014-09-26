@@ -1,3 +1,6 @@
+# author: NGUYEN TAN THONG
+#
+
 QEMU=qemu-system-i386
 INFO=" [info] "
 RUSTC := LD_LIBRARY_PATH=/usr/local/lib rustc
@@ -6,13 +9,13 @@ AS=as -32
 SHELL := /bin/bash
 LD := ld -m elf_i386
 QEMU_FLAGS := -serial mon:stdio
-CC_FLAGS := -nostdinc -fno-omit-frame-pointer -Wall -Wno-format -Wno-unused -Werror -gstabs -fno-builtin
+CC_FLAGS := -nostdinc -fno-omit-frame-pointer -Wall -Wno-format -Wno-unused -Werror -fno-builtin -gdwarf-2
 CC := gcc -pipe -m32
 V=0
 
 TOP = .
 
-OBJS := $(addprefix $(OBJDIR)/,entry.o qsort.o bsearch.o alloc.o malloc.o state.o dwarf.o entrypgdir.o init.o readline.o printfmt.o string.o printf.o console.o libm.o libkernel.a)
+OBJS := $(addprefix $(OBJDIR)/,entry.o qsort.o bsearch.o alloc.o malloc.o state.o dwarf.o read.o elf.o entrypgdir.o init.o readline.o printfmt.o string.o printf.o console.o libm.o libkernel.a)
 
 GCC_LIB := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 

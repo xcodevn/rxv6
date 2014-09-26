@@ -26,31 +26,29 @@ static int base_address= 0xf0100000;
 void error_callback(void * a, const char * b, int c) {
 }
 
+static struct backtrace_state * state;
 
 
+struct debug_info {
+    char* file_name;
+    char* func_name;
+    int   file_line;
+};
+
+static fileline fn;
+
+int callback_fn (void *data, uintptr_t pc,
+					const char *filename, int lineno,
+					const char *function) {
+    return 0;
+}
 
 void debug_init() {
- struct backtrace_state * state = backtrace_create_state(
-                                    "src/kernel.elf", 0,
-                                    error_callback, data);
+  state = backtrace_create_state( "src/kernel.elf", 0, error_callback, data);
 
-  fileline fn;
+  backtrace_initialize(state, 0, error_callback,  data, &fn);
 
-  backtrace_dwarf_add (state, base_address,
-          (const unsigned char*) debuginfo_begin,
-          debuginfo_end - debuginfo_begin,
-          (const unsigned char*) debugline_begin,
-          debugline_end - debugline_begin,
-          (const unsigned char*) debugabbrev_begin,
-          debugabbrev_end - debugabbrev_begin,
-          (const unsigned char*) debugranges_begin,
-          debugranges_end - debugranges_begin,
-          (const unsigned char*) debugstr_begin,
-          debugstr_end - debugstr_begin,
-          0,
-			    error_callback, 
-          data, 
-          &fn);
+  fn(state, (unsigned int) main,  callback_fn, error_callback, data);
 }
 
 void i386_init() {
