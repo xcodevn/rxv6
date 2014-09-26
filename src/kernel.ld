@@ -19,7 +19,27 @@ SECTIONS
 	PROVIDE(etext = .);	/* Define the 'etext' symbol to this value */
 
 	.rodata : {
-		*(.rodata .rodata.* .gnu.linkonce.r.* .data.rel.*)
+		*(.rodata .rodata.* .gnu.linkonce.r.* .data.rel.*);
+
+        PROVIDE(debuginfo_begin = .);
+        *(.debug_info);
+        PROVIDE(debuginfo_end = .);
+
+        PROVIDE(debugline_begin = .);
+        *(.debug_line);
+        PROVIDE(debugline_end = .);
+
+        PROVIDE(debugabbrev_begin = .);
+        *(.debug_abbrev);
+        PROVIDE(debugabbrev_end = .);
+
+        PROVIDE(debugranges_begin = .);
+        *(.debug_ranges);
+        PROVIDE(debugranges_end = .);
+
+        PROVIDE(debugstr_begin = .);
+        *(.debug_str);
+        PROVIDE(debugstr_end = .);
 	}
 
 	/* Include debugging information in kernel memory */
@@ -47,15 +67,14 @@ SECTIONS
 		*(.data)
 	}
 
-
 	/* The data segment */
 	.heapdata : {
 		*(.heapdata)
 	}
 	.bss : {
-        PROVIDE(edata = .);
-		*(.bss)
-        PROVIDE(end = .);
+      PROVIDE(edata = .);
+		*(.bss);
+      PROVIDE(end = .);
 	}
 
 

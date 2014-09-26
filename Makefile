@@ -6,7 +6,7 @@ AS=as -32
 SHELL := /bin/bash
 LD := ld -m elf_i386
 QEMU_FLAGS := -serial mon:stdio
-CC_FLAGS := -nostdinc -fno-omit-frame-pointer -Wall -Wno-format -Wno-unused -Werror -gstabs -O1 -fno-builtin
+CC_FLAGS := -nostdinc -fno-omit-frame-pointer -Wall -Wno-format -Wno-unused -Werror -gstabs -fno-builtin
 CC := gcc -pipe -m32
 V=0
 
@@ -48,7 +48,7 @@ $(OBJDIR)/boot0: boot/boot.ld boot/boot.S boot/main.c | $(OBJDIR)
 	$V$(CC) -E boot/boot.S  -I$(TOP)/libc > $(OBJDIR)/boot.s
 	$V$(AS) --32 $(OBJDIR)/boot.s -o $(OBJDIR)/bootA.o
 	$Vecho  cc boot/main.c
-	$V$(CC) -c -o $(OBJDIR)/bootB.o boot/main.c $(CC_FLAGS) -I$(TOP)/libc
+	$V$(CC) -O1 -c -o $(OBJDIR)/bootB.o boot/main.c $(CC_FLAGS) -I$(TOP)/libc
 	$Vecho  ld bootA.o bootB.o -o boot0
 	$V$(LD) -g -o $@ -T boot/boot.ld $(OBJDIR)/bootA.o $(OBJDIR)/bootB.o
 
