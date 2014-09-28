@@ -25,6 +25,7 @@ pub mod origin {
         pub fn readline(promt: *const u8) -> *const u8;
         pub fn set_bgcolor(color: int);
         pub fn set_textcolor(color: int);
+        pub fn fileline_debug(pc: u32, buf: &mut (&str, &str, u32) );
     }
 }
 

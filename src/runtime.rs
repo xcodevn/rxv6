@@ -9,7 +9,7 @@ use self::core::mem::transmute;
 use libc::console::println;
 use libc;
 
-#[lang = "begin_unwind"]
+#[lang="fail_fmt"]
 fn begin_unwind(args: &self::core::fmt::Arguments,
                         file: *const u8, len:uint, line: uint) -> ! {
 

@@ -22,3 +22,8 @@ macro_rules! sprintf(
         unsafe{ libc::origin::snprintf($buf.as_mut_ptr(), $buf.len() as int, cstr!($fmt).as_ptr() $(,$var)*); }
     )
 )
+
+#[macro_export]
+macro_rules! try(
+    ($e:expr) => (match $e { Ok(e) => e, Err(e) => return Err(e) })
+)

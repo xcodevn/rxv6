@@ -15,6 +15,7 @@ pub mod mem;
 pub mod runtime;
 pub mod monitor;
 pub mod libc;
+pub mod backtrace;
 
 #[no_mangle]
 pub fn main() {

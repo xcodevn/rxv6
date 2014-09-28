@@ -30,17 +30,35 @@ static struct backtrace_state * state;
 
 
 struct debug_info {
-    char* file_name;
-    char* func_name;
+    const char* file_name;
+    int   file_name_len;
+    const char* func_name;
+    int   func_name_len;
     int   file_line;
 };
 
 static fileline fn;
+extern void cons_init();
 
 int callback_fn (void *data, uintptr_t pc,
 					const char *filename, int lineno,
 					const char *function) {
+
+    struct debug_info * dt = (struct debug_info*)data;
+    if (filename != NULL) dt->file_name = filename;
+      else dt->file_name = "<unk>";
+
+    dt->file_name_len = strlen(dt->file_name);
+    if (function) dt->func_name = function;
+      else dt->func_name = "<unk>";
+    dt->func_name_len = strlen( dt->func_name );
+    dt->file_line = lineno;
+
     return 0;
+}
+
+void fileline_debug(unsigned int pc, struct debug_info* data) {
+  fn(state, pc,  callback_fn, error_callback, data);
 }
 
 void debug_init() {
@@ -48,7 +66,6 @@ void debug_init() {
 
   backtrace_initialize(state, 0, error_callback,  data, &fn);
 
-  fn(state, (unsigned int) main,  callback_fn, error_callback, data);
 }
 
 void i386_init() {
