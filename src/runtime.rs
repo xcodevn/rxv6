@@ -1,6 +1,9 @@
 #![allow(unused_unsafe)] 
 #![allow(dead_code)]
 
+
+/// Run-time environment for Rust
+
 extern crate core;
 
 use self::core::prelude::*;

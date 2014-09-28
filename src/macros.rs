@@ -1,5 +1,7 @@
 #![macro_escape]
 
+/// All useful macros in our kernel usecase
+
 #[macro_export]
 macro_rules! cprintf(
     ($fmt:expr $(,$var:expr)*) => (

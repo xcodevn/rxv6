@@ -1,3 +1,6 @@
+/// Basic interactive mechamisn for kernel dev
+/// Support simple commands
+///
 extern crate core;
 use core::fmt::*;
 use core::prelude::*;
@@ -5,7 +8,6 @@ use core::prelude::*;
 use libc;
 use mem;
 use asm;
-use kdebug;
 use libc::console::{print, println};
 use libc::console;
 use backtrace;
@@ -18,16 +20,19 @@ struct Cmd {
     action: fn()
 }
 
+/// Simple Writer for demangel C++ style purpose
 pub struct B512Writer {
     buf: [u8, ..512],
     pos: uint,
 }
 
 impl B512Writer {
+    /// Return raw String!
     pub fn as_ptr<'a>(self: &'a B512Writer) -> *const u8 {
         self.buf.as_ptr()
     }
 
+    /// Return new instance
     pub fn new() -> B512Writer {
         B512Writer {
             buf: [0u8, ..512],
@@ -35,6 +40,7 @@ impl B512Writer {
         }
     }
 
+    /// Write str into the buffer
     pub fn write_str(&mut self, bytes: &str) -> Result< (), core::fmt::FormatError >  {
         if bytes.len() + self.pos > 512 { return Err( WriteError ) }
         for i in range(0, bytes.len()) { self.buf[self.pos + i] = bytes.as_bytes()[i] }
@@ -44,27 +50,28 @@ impl B512Writer {
 }
 
 
+/// Support function for char type
 pub trait CharFns {
     fn is_digit(self: Self) -> bool ;
 }
 
 impl CharFns for char {
+    /// is in set ['0'..'9']
     fn is_digit(self: char) -> bool {
         self >= '0' && self <= '9'
     }
 }
 
 impl Cmd {
+    /// Call the action function which save in the struct
     fn action(&self) {
         let call = self.action;
         call()
     }
 }
 
+/// Print out list of current supported commands
 fn mon_help() {
-
-    let s = "hello world";
-    s.starts_with("hello");
 
     cprintf!("\nCommand list\n");
     for i in range(0, cmds.len()) {
@@ -74,6 +81,8 @@ fn mon_help() {
     cprintf!("\n");
 }
 
+/// Show the stacktrace by using `backtrace` lib
+/// ported from Rust source code
 fn mon_backtrace () {
     cprintf!("Call stack:\n");
     let mut ebp: u32 = asm::read_ebp();
@@ -86,7 +95,7 @@ fn mon_backtrace () {
 
         let mut writer = B512Writer::new();
 
-        backtrace::demangle(&mut writer, funcname);
+        let rl = backtrace::demangle(&mut writer, funcname);
 
         cprintf!("[%2d]  eip: %08p function %s at %s:%d\n", count, eip, writer.as_ptr(), filename.as_ptr(), lineno);
         ebp = unsafe { *(ebp as *const u32) };
@@ -95,7 +104,9 @@ fn mon_backtrace () {
     }
 }
 
+/// Useful information about kernel
 fn mon_kerninfo () {
+    cprintf!("MEM SIZE %d MB\n", mem::get_memsize()/1024/1024 + 1);
     cprintf!("Special kernel symbols:\n");
     let (_start, entry, etext, edata, end) = { use libc::origin::*;
                                                 (_start as u32, 
@@ -110,12 +121,15 @@ fn mon_kerninfo () {
                      mem::roundup(end - entry, 1024) / 1024);
 }
 
+/// List cmd struct
 static cmds : [Cmd,..3] = [ 
     Cmd { name: "help",      info: "help      :  getting this help message\x00", action: mon_help} ,
     Cmd { name: "kerninfo",  info: "kerninfo  :  kernel memory region info \x00", action: mon_kerninfo} ,
     Cmd { name: "backtrace", info: "backtrace :  show backtrace stack\x00", action: mon_backtrace} ,
 ];
 
+
+/// Main function of montitor
 pub fn run () {
 
     console::set_textcolor(9);

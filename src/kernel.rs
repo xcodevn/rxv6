@@ -3,14 +3,18 @@
 #![feature(globs, lang_items, macro_rules, asm)]
 #![allow(ctypes, while_true, unused_imports, unused_variable)]
 
+///
+/// Main module file
+/// Include all other sub-modules
+///
+
 extern crate core;
 
 use core::prelude::*;
 
 pub mod macros;
-pub mod tools;
 pub mod asm;
-pub mod kdebug;
+pub mod io;
 pub mod mem;
 pub mod runtime;
 pub mod monitor;
@@ -18,8 +22,8 @@ pub mod libc;
 pub mod backtrace;
 
 #[no_mangle]
+/// Init the kernel 
 pub fn main() {
-    let a = box 3i;
-    libc::console::init();
-    monitor::run();
+    libc::console::init();      // init CGA and Serial port
+    monitor::run();             // excute the monitor loop
 }

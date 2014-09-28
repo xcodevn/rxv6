@@ -3,6 +3,7 @@
 
 extern crate core;
 
+/// Interace to original C functions (pointers)
 pub mod origin {
     extern "C" {
         /* symbols addr */
@@ -30,6 +31,7 @@ pub mod origin {
 }
 
 
+/// Safe wrapper for console functions
 pub mod console {
     use core::prelude::*;
     use core::mem;
@@ -70,14 +72,17 @@ pub mod console {
         print("\n\x00");
     }
 
+    /// Init console
     pub fn init() {
         unsafe { super::origin::cons_init(); }
     }
 
+    /// Set screen background color (0..15)
     pub fn set_bgcolor(color: int) {
         unsafe { super::origin::set_bgcolor(color); }
     }
 
+    /// Set screen text color (0..15)
     pub fn set_textcolor(color: int) {
         unsafe { super::origin::set_textcolor(color); }
     }
